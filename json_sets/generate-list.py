@@ -31,6 +31,10 @@ for card in set_array:
     obj["name"] = card["name"]
     obj["image"] = card["assets"][0]["gameAbsolutePath"]
     obj["rarity"] = card["rarity"].lower()
+    if not card["collectible"]:
+        print(card["name"], card["rarity"], file=sys.stderr)
+        obj["rarity"] = "none"
+
     obj["region"] = card["regionRef"]
     obj["type"] = card["type"]
     output_array.append(obj)

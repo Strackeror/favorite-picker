@@ -217,123 +217,125 @@
         "Pick" button. Eventually, your favorite will start appearing under "Picked cards". You can continue
         as long as you like to construct an arbitrarily long list of your favored cards</p>
     <p>In principle, this picker is perfectly accurate, provided you pick consistently - you'll correctly get your
-        second favorite second, even if it's pitted against your absolute favorite early on, for instance. You can reorder
+        second favorite second, even if it's pitted against your absolute favorite early on, for instance. You can
+        reorder
         your favorites after you've found them, but in principle you shouldn't need to.</p>
     <h3>Options</h1>
-    <div id="options">
-        <p>Include rarity:
-            <label><input type="checkbox" name="rarity" class="rarity" value="common"> Common</label>
-            <label><input type="checkbox" name="rarity" class="rarity" value="rare"> Rare</label>
-            <label><input type="checkbox" name="rarity" class="rarity" value="epic"> Epic</label>
-            <label><input type="checkbox" name="rarity" class="rarity" value="champion"> Champion</label>
-            <label><input type="checkbox" name="rarity" class="rarity" value="none"> Non-Collectable</label>
-        </p>
-        <p>Include regions:
-            <label><input type="checkbox" name="region" class="region" value="Bilgewater"> Bilgewater</label>
-            <label><input type="checkbox" name="region" class="region" value="Demacia"> Demacia</label>
-            <label><input type="checkbox" name="region" class="region" value="Freljord"> Freljord</label>
-            <label><input type="checkbox" name="region" class="region" value="Ionia"> Ionia</label>
-            <label><input type="checkbox" name="region" class="region" value="Noxus"> Noxus</label>
-            <label><input type="checkbox" name="region" class="region" value="PiltoverZaun"> Piltover & Zaun</label>
-            <label><input type="checkbox" name="region" class="region" value="ShadowIsles"> Shadow Isles</label>
-            <label><input type="checkbox" name="region" class="region" value="Targon"> Targon</label>
-        </p>
-        <p>Card type:
-            <label><input type="checkbox" name="type" class="type" value="Unit"> Unit</label>
-            <label><input type="checkbox" name="type" class="type" value="Spell"> Spell</label>
-            <label><input type="checkbox" name="type" class="type" value="Ability"> Skill</label>
-        </p>
-        <p><button class="reset">Reset</button></p>
-    </div>
-    <div id="container">
-        <div id="picking">
-            <h2>Pick cards</h2>
-            <ul id="evaluating" class="item-list">
-            </ul>
-            <p id="buttons"><button id="pick">Pick</button> <button id="pass">Pass</button> <button id="undo">Undo</button>
-                <button id="redo">Redo</button></p>
-            <p>Cards remaining to be eliminated before next favorite is found: <span id="remaining"></span></p>
-    
+        <div id="options">
+            <p>Include rarity:
+                <label><input type="checkbox" name="rarity" class="rarity" value="common"> Common</label>
+                <label><input type="checkbox" name="rarity" class="rarity" value="rare"> Rare</label>
+                <label><input type="checkbox" name="rarity" class="rarity" value="epic"> Epic</label>
+                <label><input type="checkbox" name="rarity" class="rarity" value="champion"> Champion</label>
+                <label><input type="checkbox" name="rarity" class="rarity" value="none"> Non-Collectable</label>
+            </p>
+            <p>Include regions:
+                <label><input type="checkbox" name="region" class="region" value="Bilgewater"> Bilgewater</label>
+                <label><input type="checkbox" name="region" class="region" value="Demacia"> Demacia</label>
+                <label><input type="checkbox" name="region" class="region" value="Freljord"> Freljord</label>
+                <label><input type="checkbox" name="region" class="region" value="Ionia"> Ionia</label>
+                <label><input type="checkbox" name="region" class="region" value="Noxus"> Noxus</label>
+                <label><input type="checkbox" name="region" class="region" value="PiltoverZaun"> Piltover & Zaun</label>
+                <label><input type="checkbox" name="region" class="region" value="ShadowIsles"> Shadow Isles</label>
+                <label><input type="checkbox" name="region" class="region" value="Targon"> Targon</label>
+            </p>
+            <p>Card type:
+                <label><input type="checkbox" name="type" class="type" value="Unit"> Unit</label>
+                <label><input type="checkbox" name="type" class="type" value="Spell"> Spell</label>
+                <label><input type="checkbox" name="type" class="type" value="Ability"> Skill</label>
+            </p>
+            <p><button class="reset">Reset</button></p>
         </div>
-        <div id="secondary">
-            <h2>Picked cards</h2>
-            <ol id="favorites" class="item-list">
-            </ol>
+        <div id="container">
+            <div id="picking">
+                <h2>Pick cards</h2>
+                <ul id="evaluating" class="item-list">
+                </ul>
+                <p id="buttons"><button id="pick">Pick</button> <button id="pass">Pass</button> <button
+                        id="undo">Undo</button>
+                    <button id="redo">Redo</button></p>
+                <p>Cards remaining to be eliminated before next favorite is found: <span id="remaining"></span></p>
+
+            </div>
+            <div id="secondary">
+                <h2>Picked cards</h2>
+                <ol id="favorites" class="item-list">
+                </ol>
+            </div>
         </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-    <script src="picker.js"></script>
-    <script src="picker-ui.js"></script>
-    <script src="set.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
-    <script>
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+        <script src="picker.js"></script>
+        <script src="picker-ui.js"></script>
+        <script src="set.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
+        <script>
 
-        'use strict';
-        var myPicker = new picker.Picker({
-            items: item_list,
-            localStorageKey: `lor-favorite-picker`,
-            defaultSettings: { 
-                rarity: ["common", "rare", "epic", "champion"],
-                region: ["Bilgewater", "Demacia", "Freljord", "Ionia", "Noxus", "PiltoverZaune", "ShadowIsles", "Targon"],
-                type: ["Unit", "Spell", "Ability"],
-            },
-            shouldIncludeItem: function(item, settings) {
-                var valid = true;
-                valid &= settings.rarity.indexOf(item.rarity) !== -1;
-                valid &= settings.region.indexOf(item.region) !== -1;
-                valid &= settings.type.indexOf(item.type) !== -1;
-                return valid;
-            }
-        });
-
-        var pickerUI = new PickerUI(myPicker, {
-            elements: {
-                pick: "#pick",
-                pass: "#pass",
-                undo: "#undo",
-                redo: "#redo",
-                reset: ".reset",
-                evaluating: "#evaluating",
-                favorites: "#favorites",
-                settings: {
-                    rarity: '.rarity',
-                    region: '.region',
-                    type: '.type',
+            'use strict';
+            var myPicker = new picker.Picker({
+                items: item_list,
+                localStorageKey: `lor-favorite-picker`,
+                defaultSettings: {
+                    rarity: ["common", "rare", "epic", "champion"],
+                    region: ["Bilgewater", "Demacia", "Freljord", "Ionia", "Noxus", "PiltoverZaune", "ShadowIsles", "Targon"],
+                    type: ["Unit", "Spell"],
+                },
+                shouldIncludeItem: function (item, settings) {
+                    var valid = true;
+                    valid &= settings.rarity.indexOf(item.rarity) !== -1;
+                    valid &= settings.region.indexOf(item.region) !== -1;
+                    valid &= settings.type.indexOf(item.type) !== -1;
+                    return valid;
                 }
-            },
-            onUpdate: function (updateType) {
-                var total = this.picker.state.items.length;
-                var current = this.picker.state.arrays.current.length;
-                var favorites = this.picker.state.arrays.favorites.length;
-                var eliminated = this.picker.state.arrays.eliminated.length;
-                var evaluating = this.picker.state.arrays.evaluating.length;
-                var remaining = Math.max(0, total - favorites - eliminated - 1);
+            });
 
-                $("#remaining").text(remaining);
-            },
-        });
+            var pickerUI = new PickerUI(myPicker, {
+                elements: {
+                    pick: "#pick",
+                    pass: "#pass",
+                    undo: "#undo",
+                    redo: "#redo",
+                    reset: ".reset",
+                    evaluating: "#evaluating",
+                    favorites: "#favorites",
+                    settings: {
+                        rarity: '.rarity',
+                        region: '.region',
+                        type: '.type',
+                    }
+                },
+                onUpdate: function (updateType) {
+                    var total = this.picker.state.items.length;
+                    var current = this.picker.state.arrays.current.length;
+                    var favorites = this.picker.state.arrays.favorites.length;
+                    var eliminated = this.picker.state.arrays.eliminated.length;
+                    var evaluating = this.picker.state.arrays.evaluating.length;
+                    var remaining = Math.max(0, total - favorites - eliminated - 1);
 
-        pickerUI.initialize();
+                    $("#remaining").text(remaining);
+                },
+            });
 
-        /* Sortable favorites - you can safely remove this, and the Sortable.min.js script, if you don't want to be able to sort your favorite list. */
-        var sortable = new Sortable(pickerUI.elem.favorites.get(0), {
-            draggable: '.item',
-            animation: 100,
-            onStart: function () {
-                pickerUI.elem.favorites.addClass("sorting");
-            },
-            onEnd: function () {
-                pickerUI.elem.favorites.removeClass("sorting");
-            },
-            onUpdate: function () {
-                myPicker.setFavorites(pickerUI.elem.favorites.children().map(function () {
-                    return pickerUI.getItem(this);
-                }).get());
-                pickerUI.update(true);
-            }
-        });
-/* End sortable favorites */
-    </script>
+            pickerUI.initialize();
+
+            /* Sortable favorites - you can safely remove this, and the Sortable.min.js script, if you don't want to be able to sort your favorite list. */
+            var sortable = new Sortable(pickerUI.elem.favorites.get(0), {
+                draggable: '.item',
+                animation: 100,
+                onStart: function () {
+                    pickerUI.elem.favorites.addClass("sorting");
+                },
+                onEnd: function () {
+                    pickerUI.elem.favorites.removeClass("sorting");
+                },
+                onUpdate: function () {
+                    myPicker.setFavorites(pickerUI.elem.favorites.children().map(function () {
+                        return pickerUI.getItem(this);
+                    }).get());
+                    pickerUI.update(true);
+                }
+            });
+        /* End sortable favorites */
+        </script>
 </body>
 
 </html>
