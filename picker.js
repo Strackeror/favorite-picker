@@ -425,17 +425,10 @@
     };
 
     /* PICKER OBJECT */
-
     function Picker(options) {
         if (!(this instanceof Picker)) {
             return new Picker(options);
         }
-
-        if (!options.items) {
-            console.error("No items specified for picker.");
-            return;
-        }
-
         var self = this;
 
         this.itemMap = {};

@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0">
+<meta name="flattr:id" content="9ykjj0">
+<link href="/favicon.png" rel="shortcut icon" type="image/png">
+<title>Favorite Pokémon Picker</title>
+<style>
+body {
+    background:#FFF;
+    color:#000;
+    font-family:verdana, sans-serif;
+    font-size:10pt;
+    margin:0;
+    padding:10px;
+}
+
+a:link, a:visited {
+    color:#008;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+a:active, a:hover {
+    color:#ACF;
+}
+
+.info {
+    font-weight:bold;
+}
+
+button {
+    font-family:inherit;
+    cursor:pointer;
+    border:0;
+    border-radius:3px;
+    padding:0.3em 0.5em;
+    background:#CCC;
+    color:#000;
+}
+
+button:hover, button:active, button:focus {
+    background:#DDD;
+    outline:none;
+}
+
+button.disabled {
+    background:#DDD;
+    color:#888;
+    cursor:not-allowed;
+}
+
+button.disabled:hover {
+    background:#DDD;
+}
+
+#container {
+    position:relative;
+    margin-left:-10px;
+    margin-right:-10px;
+    padding:10px;
+    overflow:hidden;
+}
+
+.tabs {
+    margin:20px 0;
+    padding:0 10px;
+    list-style-type:none;
+    border-bottom:1px solid #AAA;
+}
+
+.tabs li {
+    margin:0 -1px -1px 0;
+    padding:0;
+    display:inline-block;
+    vertical-align:bottom;
+    border:1px solid #AAA;
+    background:#EEE;
+}
+
+.tabs li:first-child {
+    border-top-left-radius:5px;
+}
+
+.tabs li:last-child {
+    border-top-right-radius:5px;
+}
+
+.tabs li.active {
+    border-top-left-radius:5px;
+    border-top-right-radius:5px;
+    background:#FFF;
+    border-bottom-color:#FFF;
+}
+
+.tabs a {
+    display:block;
+    padding:5px 10px;
+    font-size:1.1em;
+    color:#000;
+}
+
+.tabs li.active a {
+    font-size:1.2em;
+    padding:10px 20px 5px;
+}
+
+#expand-favorites {
+    display:none;
+}
+
+@media (min-width:360px) {
+    .tabs a {
+        font-size:1.3em;
+    }
+
+    .tabs li.active a {
+        font-size:1.5em;
+    }
+}
+
+@media (min-width:1024px) {
+    /* Put the found favorites beside the picking div when the window is sufficiently large */
+    #picking {
+        float:left;
+        width:636px;
+    }
+
+    #secondary {
+        margin-left:646px;
+    }
+
+    #secondary, #picking {
+        transition:margin-left 0.4s;
+    }
+
+    #picking.collapsed {
+        margin-left:-100%;
+        z-index:-1;
+    }
+
+    #secondary.expanded {
+        margin-left:0;
+    }
+
+    #expand-favorites {
+        display:inline-block;
+    }
+
+    .tabs {
+        padding-left:0;
+    }
+}
+
+@media (min-width:1300px) {
+    /* Once we get to the point where 636px is less than half of the width of the screen, make the picking div just take up half */
+    #picking {
+        width:50%;
+    }
+
+    #secondary {
+        margin-left:51%;
+    }
+}
+
+#pick {
+    background:#58F;
+    color:#FFF;
+    font-size:larger;
+    font-weight:bold;
+    width:6em;
+    border-radius:5px;
+    margin-right:10px;
+}
+
+#pick.disabled {
+    background:#ACF;
+}
+
+#pick:hover {
+    background:#ACF;
+}
+
+.item-list {
+    padding:0;
+    list-style-type:none;
+    line-height:100px;
+}
+
+.item-list li {
+    margin:0;
+    display:inline-block;
+    height:106px;
+    width:106px;
+    border:3px solid transparent;
+    text-align:center;
+    position:relative;
+    vertical-align:top;
+    overflow:visible;
+    border-radius:100%;
+    color:#F7F7F7;
+}
+
+.item-list li span {
+    display:block;
+    width:100px;
+    height:100px;
+    padding:3px;
+    background:#F7F7F7;
+    border-radius:100%;
+}
+
+.item-list li img {
+    position:absolute;
+    top:-5px;
+    left:-3px;
+    /*
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    */
+    z-index:100;
+}
+
+@media (max-width:656px) {
+    .item-list {
+        line-height:75px;
+    }
+
+    .item-list li {
+        height:81px;
+        width:81px;
+    }
+
+    .item-list li span {
+        height:75px;
+        width:75px;
+        padding:3px;
+    }
+
+    .item-list li img {
+        top:-2px;
+        left:-2px;
+        max-height:112%;
+        max-width:112%;
+    }
+}
+
+@media (max-width:456px) {
+    .item-list {
+        line-height:48px;
+    }
+
+    .item-list li {
+        height:54px;
+        width:54px;
+    }
+
+    .item-list li span {
+        height:48px;
+        width:48px;
+        padding:3px;
+    }
+
+    .item-list li img {
+        top:-1px;
+        left:-1px;
+        max-height:112%;
+        max-width:112%;
+    }
+}
+
+#pokemon li {
+    cursor:pointer;
+}
+
+#favorites li {
+    cursor:move;
+}
+
+.item-list li:hover span {
+    background:#CDF;
+}
+
+.item-list.sorting li:hover span {
+    background:#F7F7F7;
+}
+
+#pokemon li.selected span {
+    padding:0;
+    border:3px solid #7AC;
+}
+
+#pokemon, #buttons {
+    text-align:center;
+    margin:auto;
+}
+
+#pokemon li.notice {
+    width:auto;
+    height:auto;
+    max-width:260px;
+    margin:auto;
+    background:#F7F7F7;
+    border-radius:10px;
+    padding:30px 30px;
+    color:#000;
+    text-align:center;
+    line-height:1.4;
+    cursor:auto;
+}
+
+#pokemon li.notice span {
+    display:inline;
+    background:none;
+    width:auto;
+    height:auto;
+    padding:0;
+    border-radius:0;
+}
+
+#buttons {
+    margin-top:30px;
+    position:relative;
+    z-index:3;
+}
+
+#howitworks, #debug {
+    display:none;
+    overflow:hidden;
+}
+
+#debug-toggle {
+    margin-top:3em;
+    font-size:smaller;
+    text-align:right;
+}
+
+#debug {
+    font-size:smaller;
+}
+
+#debug-state {
+    width:80%;
+}
+
+#max-batch-size {
+    width:3em;
+}
+
+.picker-info {
+    text-align:center;
+    font-size:smaller;
+}
+
+#progress-bar {
+    display:block;
+    margin:auto;
+    height:15px;
+    width:150px;
+    margin-top:5px;
+    background:#CDF;
+    vertical-align:middle;
+}
+
+#progress-bar span {
+    display:block;
+    height:100%;
+    width:0;
+    background:#58F;
+}
+
+.help-text {
+    display:block;
+    font-size:smaller;
+}
+
+#shared-list-modal {
+    position:absolute;
+    background:#FFF;
+    margin:60px auto;
+    top:0;
+    right:0;
+    left:0;
+    width:650px;
+    max-width:95%;
+    box-sizing:border-box;
+    padding:20px 50px 50px;
+    box-shadow:1px 1px 5px #333;
+    z-index:100;
+}
+
+@media(max-width:700px) {
+    #shared-list-modal {
+        padding:20px;
+    }
+}
+
+#shared-list-modal:before {
+    content:'';
+    position:fixed;
+    background:#FFF;
+    opacity:0.5;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    z-index:-1;
+}
+
+#shared-list-modal .item-list {
+    text-align:center;
+    margin:2em 0;
+}
+
+#shared-list-modal .close {
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:30px;
+    line-height:30px;
+    color:#AAA;
+    font-weight:bold;
+    text-align:center;
+    background:none;
+    padding:0;
+    font-size:larger;
+}
+
+#shared-list-modal .close:hover {
+    background:#EEE;
+}
+
+#shared-list-modal .buttons {
+    text-align:center;
+    line-height:3.5em;
+}
+
+#shared-list-modal button {
+    padding:0.9em 2em;
+    margin:0 0.2em;
+}
+
+#darkmode {
+    position:absolute;
+    top:10px;
+    right:10px;
+}
+</style>
+<link rel="alternate stylesheet" title="dark" type="text/css" href="/styles/favorite-dark.css" disabled>
+<script type="text/javascript">
+/* STYLE SWITCHER */
+
+function setActiveStyleSheet(title) {
+  var i, a, main;
+  for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
+    if(a.getAttribute("rel").indexOf("style") != -1 && a.getAttribute("title")) {
+      a.disabled = true;
+      if(a.getAttribute("title") == title) a.disabled = false;
+    }
+  }
+  localStorage.setItem("favorite-style", title);
+}
+
+function getActiveStyleSheet() {
+  var i, a;
+  for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
+    if(a.getAttribute("rel").indexOf("style") != -1 && a.getAttribute("title") && !a.disabled) return a.getAttribute("title");
+  }
+  return null;
+}
+
+function getPreferredStyleSheet() {
+  var i, a;
+  for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
+    if(a.getAttribute("rel").indexOf("style") != -1
+       && a.getAttribute("rel").indexOf("alt") == -1
+       && a.getAttribute("title")
+       ) return a.getAttribute("title");
+  }
+  return null;
+}
+
+var style = localStorage.getItem("favorite-style");
+var title = style;
+setActiveStyleSheet(title);
+</script>
+</head>
+
+<body>
+    <a href="#" id="darkmode">Dark mode</a>
+    <h1>Favorite Pokémon Picker</h1>
+
+    <p>For each group of Pokémon presented to you, click one or more of your favorites from that group and press the
+        "Pick" button. Eventually, your favorite Pokémon will start appearing under "Found Favorites". You can continue
+        as long as you like to construct an arbitrarily long list of your favorite Pokémon.</p>
+
+    <p>In principle, this picker is perfectly accurate, provided you pick consistently - you'll correctly get your
+        second favorite second, even if it's pitted against your absolute favorite early on, for instance. <a
+            href="#howitworks" class="toggle">Click here for more on how this tool works.</a> You can reorder your
+        favorites after you've found them, but in principle you shouldn't need to.</p>
+
+    <p>Various filtering and presentation options for the picker can be found in the "Options" tab next to "Found
+        Favorites" below.</p>
+
+    <p>Want to create your own favorite picker? <a href="https://github.com/antialiasis/favorite-picker">It's on GitHub
+            with instructions to get you started.</a></p>
+
+    <div id="howitworks">
+        <h2>How It Works</h2>
+
+        <p>The idea for the favorite Pokémon picker is not original to me; it is inspired by an old, now-defunct
+            original that has been recreated with upgrades <a href="http://fio4ri.github.io/FavoritePokemon/">here</a>.
+            Basically, it would present you with a random pair of Pokémon, you'd pick the one you liked better, and that
+            would eliminate the other Pokémon from the running and then give you another pair randomly chosen from the
+            remaining Pokémon. Eventually, when you had eliminated every Pokémon but one, the remaining one had to be
+            your very favorite Pokémon, and the last few you eliminated were given second to tenth place.</p>
+
+        <p>This picker was designed to improve on this concept. The main differences are that it will present you with
+            up to 20 Pokémon at a time by default, which speeds up the picking process considerably, and that rather
+            than giving second to tenth place to the last nine Pokémon you eliminated (which leaves them partially up to
+            chance - if the old picker happens to make you pick between your two favorites early on, your real second
+            favorite won't even make the list), it will instead bring back all Pokémon eliminated by your favorite and
+            have you pick between them in the same way as before. This recursiveness also means that instead of cutting
+            it off at top ten, you can in theory continue picking until you've ordered literally every single Pokémon
+            into a favorites list.</p>
+
+        <p>The basic principle driving this picker is still elimination - it just also keeps track of which Pokémon you
+            picked over each eliminated Pokémon. For example, if the picker shows Charizard and Butterfree, and you pick
+            Charizard, it doesn't give Charizard points or mark it as liked somehow; it just marks Butterfree as
+            eliminated by Charizard. If you eventually go on to eliminate every Pokémon except Charizard, then Charizard
+            will be added to your Found Favorites, and Butterfree (and any other Pokémon that were eliminated by
+            Charizard) will be back in the running for second place. Similarly, if you had previously had a batch with
+            Charizard, Butterfree and Blastoise in it, and you picked Charizard and Butterfree, then Blastoise will
+            reappear whenever Charizard and Butterfree have <em>both</em> been added under Found Favorites.</p>
+
+        <p>All that picking means is therefore, "I like all of <em>these</em> Pokémon better than any of
+            <em>those</em>." This is intentionally a broad, flexible statement; you'll end up with the same result
+            regardless of how many Pokémon you choose to pick from each batch, so it's up to you how many you want to
+            pick at a time. If you just want to get your number one favorite or a select few, it's quickest to try to
+            pick just one Pokémon from each batch, while if you want to construct something like a top fifty list, you
+            may want to start by picking every Pokémon that's likely to end up in that top fifty.</p>
+
+        <p>The elimination mechanic is also why you can't pick nothing; Pokémon can only ever be eliminated <em>by some
+                other Pokémon</em>, so that the picker can know when to bring them back. The "Pass" button is instead
+            equivalent to picking <em>every</em> Pokémon in the batch, which eliminates nothing and simply means all
+            those Pokémon get shuffled into the next round - passing over and over won't get you anywhere, so make sure
+            you do some actual picking.</p>
+
+        <p><a href="#howitworks" class="toggle">Hide explanation</a></p>
+    </div>
+
+    <div id="container">
+
+        <div id="picking">
+            <ul id="pokemon" class="item-list">
+            </ul>
+
+            <p id="buttons"><button id="pick">Pick</button> <button id="pass">Pass</button> <button
+                    id="undo">Undo</button> <button id="redo">Redo</button></p>
+
+            <div class="picker-info">
+                <p>Pokémon remaining to be eliminated before next favorite is found: <span id="remaining"></span></p>
+
+                <p>Progress towards next favorite: <span id="progress-bar"><span></span></span></p>
+            </div>
+        </div>
+
+        <div id="secondary">
+            <ul class="tabs">
+                <li id="expand-favorites"><a href="#" title="Expand list">&lsaquo;</a></li>
+                <li><a href="#found-favorites">Found Favorites</a></li>
+                <li><a href="#options">Options</a></li>
+            </ul>
+
+            <div id="found-favorites">
+                <ol id="favorites" class="item-list">
+                </ol>
+
+                <p id="dispute">Not seeing one of your favorite Pokémon? <a href="#">Click here to check what happened
+                        to it.</a></p>
+
+                <p id="debug-toggle"><a href="#debug" class="toggle">Import/export state</a></p>
+
+                <div id="debug">
+                    <p>To export your picker state (in order to, for example, import it on another computer, or allow me
+                        to replicate an issue you're experiencing), copy the entire contents of the text box below and
+                        save them however you see fit - in a text file on your computer, in an e-mail to yourself, etc.
+                    </p>
+
+                    <p>To import a state, erase the entire contents of the text box and replace them with an exported
+                        state, then press the "Import state" button below.</p>
+
+                    <textarea id="debug-state" rows="5" cols="10"></textarea>
+                    <p><button id="import">Import state</button></p>
+                </div>
+            </div>
+
+            <div id="options">
+                <p><label><input type="checkbox" id="shiny"> Shiny mode</label>
+                    <span class="help-text">If checked, all displayed sprites will be shiny.</span></p>
+
+                <p><label>Maximum batch size: <input type="number" id="max-batch-size" value="20" min="2" max="20"
+                            step="1"></label>
+                    <span class="help-text">The maximum number of Pokémon shown at a time. When there are few Pokémon
+                        left in a round, you'll see fewer than this. Reducing the maximum batch size may make it easier
+                        to pick, but it will also take longer to get through each round.</span></p>
+
+                <p><label><input type="checkbox" id="forms"> Forms mode</label> (<label><input type="checkbox"
+                            id="major"> Major only</label>)
+                    <span class="help-text">In forms mode, Pokémon forms are included as separate entities. If "Major
+                        only" is checked, only significant differences (rather than e.g. minor gender dimorphism or
+                        partial color variations) will be included; otherwise every aesthetic difference counts. This
+                        distinction is somewhat arbitrary.</span></p>
+
+                <p><label><input type="checkbox" id="final"> Final evolutions only</label>
+                    <span class="help-text">If checked, only final evolutions will be included.</span></p>
+
+                <p>Generations to include:
+                    <label><input type="checkbox" class="generations setting-number" value="1" checked> I</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="2" checked> II</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="3" checked> III</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="4" checked> IV</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="5" checked> V</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="6" checked> VI</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="7" checked> VII</label>,
+                    <label><input type="checkbox" class="generations setting-number" value="8" checked> VIII</label>
+                    <span class="help-text">Only Pokémon from the checked generations will appear. In forms mode, forms
+                        count as the generation where they were introduced, but gender differences as the base Pokémon's
+                        generation.</span></p>
+
+                <p>Types to include:
+                    <label>(<input type="checkbox" id="types-all" checked> Select all)</label>
+                    <label><input type="checkbox" class="types" value="normal" checked> Normal</label>,
+                    <label><input type="checkbox" class="types" value="fire" checked> Fire</label>,
+                    <label><input type="checkbox" class="types" value="water" checked> Water</label>,
+                    <label><input type="checkbox" class="types" value="electric" checked> Electric</label>,
+                    <label><input type="checkbox" class="types" value="grass" checked> Grass</label>,
+                    <label><input type="checkbox" class="types" value="ice" checked> Ice</label>,
+                    <label><input type="checkbox" class="types" value="fighting" checked> Fighting</label>,
+                    <label><input type="checkbox" class="types" value="poison" checked> Poison</label>,
+                    <label><input type="checkbox" class="types" value="ground" checked> Ground</label>,
+                    <label><input type="checkbox" class="types" value="flying" checked> Flying</label>,
+                    <label><input type="checkbox" class="types" value="psychic" checked> Psychic</label>,
+                    <label><input type="checkbox" class="types" value="bug" checked> Bug</label>,
+                    <label><input type="checkbox" class="types" value="rock" checked> Rock</label>,
+                    <label><input type="checkbox" class="types" value="ghost" checked> Ghost</label>,
+                    <label><input type="checkbox" class="types" value="dragon" checked> Dragon</label>,
+                    <label><input type="checkbox" class="types" value="dark" checked> Dark</label>,
+                    <label><input type="checkbox" class="types" value="steel" checked> Steel</label>,
+                    <label><input type="checkbox" class="types" value="fairy" checked> Fairy</label>
+                    <span class="help-text">Only Pokémon that have at least one of the selected types will
+                        appear.</span></p>
+
+                <p><label><input type="checkbox" id="spoilers"> Include spoilers</label>
+                    <span class="help-text">If unchecked, Pokémon that might be considered spoilers, either for story
+                        reasons or because they're officially unreleased, will be excluded.</span></p>
+
+                <p><button class="reset">Reset</button></p>
+            </div>
+        </div>
+    </div>
+
+    <p><a href="pokesite.aspx">Back to The Cave of Dragonflies</a></p>
+
+    <div id="shared-list-modal" style="display:none">
+        <button class="close shared-list-skip">&times;</button>
+        <h2>Shared list</h2>
+
+        <p>Generated by this picker tool. Create your own list or continue from this one below!</p>
+
+        <ol id="shared-list" class="item-list">
+        </ol>
+
+        <p class="buttons"><button id="shared-list-continue">Continue from this list</button> <button
+                class="shared-list-skip">Make my own list</button></p>
+    </div>
+    <script src="picker/jquery-1.10.2.min.js"></script>
+    <script src="picker/picker.js"></script>
+    <script src="picker/picker-ui.js"></script>
+    <script src="picker/Sortable.min.js"></script>
+<script>
+'use strict';
+
+/* POKÉMON DATA CONSTANTS */
+var pokemonTypes = ["normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy"];
+var pokemonGenerations = [1, 2, 3, 4, 5, 6, 7, 8];
+
+var defaultSettings = {
+    shiny: false,
+    includeForms: false,
+    majorOnly: true,
+    finalOnly: false,
+    spoilers: true,
+    generations: pokemonGenerations,
+    types: pokemonTypes,
+    maxBatchSize: 20
+};
+
+var pokemonPicker = new picker.Picker({
+    items: items,
+    defaultSettings: defaultSettings,
+    localStorageKey: 'favorites',
+    favoritesQueryParam: 'favs',
+    shortcodeLength: 2,
+    modifyState: function(state) {
+        var legacyReplacements = {
+            '306f': '306mega',
+            '71810-percent': '718tenpercent',
+            '890gigantamax': '890eternamax'
+        };
+
+        if (state.found_favorites) {
+            state.favorites = state.found_favorites;
+            delete state.found_favorites;
+        }
+
+        var survived = state.survived;
+        var eliminated = state.eliminated;
+        var evaluating = state.evaluating;
+        var current = state.current;
+        var favorites = state.favorites;
+        var arrays = [favorites, survived, eliminated, current, evaluating];
+
+        var identifier;
+        var i, j;
+
+        if (!state.settings) {
+            // Backwards-compatibility: old states since before settings became a sub-object
+            state.settings = {
+                shiny: state.shiny,
+                includeForms: state.include_forms,
+                spoilers: state.spoilers,
+                finalOnly: state.final_only,
+                // We want major only checked by default for users who weren't including forms before, so as to make it the default in forms mode
+                majorOnly: state.major_only === undefined && !state.include_forms ? true : state.major_only || true,
+                // Default to all generations/types checked.
+                generations: state.generations || pokemonGenerations,
+                types: state.types || pokemonTypes,
+                maxBatchSize: state.max_batch_size || defaultSettings.maxBatchSize
+            };
+        } else {
+            // Backwards-compatibility: ensure we have the camelCase settings (and no extra settings)
+            state.settings = {
+                shiny: state.settings.shiny,
+                includeForms: state.settings.includeForms || state.settings.include_forms,
+                spoilers: state.settings.spoilers,
+                finalOnly: state.settings.finalOnly || state.settings.final_only,
+                majorOnly: state.settings.majorOnly || state.settings.major_only,
+                generations: state.settings.generations,
+                types: state.settings.types,
+                maxBatchSize: state.settings.maxBatchSize || state.settings.max_batch_size
+            };
+        }
+
+        // Go through all the Pokémon in each array and correct legacy data format
+        for (i = 0; i < arrays.length; i++) {
+            for (j = arrays[i].length - 1; j >= 0; j--) {
+                if (arrays[i][j].number) {
+                    // Old-style data; convert to the new style
+                    if (arrays[i] === eliminated) {
+                        arrays[i][j] = {id: getPokemonIdentifier(arrays[i][j]), eliminatedBy: arrays[i][j].eliminated_by};
+                    }
+                    else {
+                        arrays[i][j] = getPokemonIdentifier(arrays[i][j]);
+                    }
+                }
+                if (arrays[i][j].mon) {
+                    // Switch to the generic format
+                    arrays[i][j].id = arrays[i][j].mon;
+                    delete arrays[i][j].mon;
+                }
+                if (arrays[i] === eliminated && arrays[i][j].eliminated_by) {
+                    // Switch to camelCase eliminatedBy
+                    arrays[i][j].eliminatedBy = arrays[i][j].eliminated_by;
+                    delete arrays[i][j].eliminated_by;
+                }
+                if (arrays[i][j].id in legacyReplacements) {
+                    arrays[i][j].id = legacyReplacements[arrays[i][j].identifier];
+                } else if (arrays[i][j] in legacyReplacements) {
+                    arrays[i][j] = legacyReplacements[arrays[i][j]];
+                }
+            }
+        }
+        // Make legacy replacements in eliminatedBy arrays
+        // We go through both arrays backwards so that splicing the indices
+        // won't mess up subsequent indices
+        for (i = eliminated.length - 1; i >= 0; i--) {
+            for (j = eliminated[i].eliminatedBy.length - 1; j >= 0; j--) {
+                if (eliminated[i].eliminatedBy[j] in legacyReplacements) {
+                    eliminated[i].eliminatedBy[j] = legacyReplacements[eliminated[i].eliminatedBy[j]];
+                }
+            }
+        }
+        return state;
+    },
+    settingsFromFavorites: function(favorites) {
+        var settings = {
+            includeForms: false,
+            majorOnly: true,
+            spoilers: false
+        };
+        var i;
+
+        for (i = 0; i < favorites.length; i++) {
+            // Activate forms mode if the Pokémon has a form...
+            if (favorites[i].form) {
+                settings.includeForms = true;
+                // ...and disable major only if this is not a major form.
+                if (!favorites[i].major) {
+                    settings.majorOnly = false;
+                }
+            }
+            // Enable spoilers if the Pokémon is a spoiler.
+            if (favorites[i].spoiler) {
+                settings.spoilers = true;
+            }
+        }
+        return settings;
+    },
+    shouldIncludeItem: function(item, settings) {
+        var key;
+        for (key in settings) {
+            if (settings.hasOwnProperty(key)) {
+                if (!settingIncludesPokemon(item, key, settings)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+    onLoadState: function(missingItems, extraItems) {
+        var addedSpoilers = false;
+        var i;
+
+        var settings = this.getSettings();
+
+        if (missingItems.length && settings.spoilers) {
+            for (i = 0; i < missingItems.length; i++) {
+                if (this.itemMap[missingItems[i]].spoiler) {
+                    // We've added a spoiler
+                    addedSpoilers = true;
+                }
+            }
+            if (addedSpoilers && !confirm("Some Pokémon marked as spoilers have been added since last time you were here. Press OK to proceed with these Pokémon added. Press Cancel to turn off spoilers so that you won't see these Pokémon.")) {
+                settings.spoilers = false;
+                this.setSettings(settings);
+            }
+        }
+        $(function() {
+            var $welcome = $('<p class="info">Welcome back! Your previous state has been loaded. If you would like to start from scratch, please click this button: </p>').append(pickerUI.makeResetButton());
+            $("h1").next(".info").remove();
+            $("h1").after($welcome);
+        });
+    }
+});
+
+var pickerUI = new PickerUI(pokemonPicker, {
+    elements: {
+        settings: {
+            shiny: "#shiny",
+            includeForms: "#forms",
+            finalOnly: "#final",
+            majorOnly: "#major",
+            generations: ".generations",
+            types: ".types",
+            spoilers: "#spoilers",
+            maxBatchSize: "#max-batch-size"
+        },
+        pick: "#pick",
+        pass: "#pass",
+        undo: "#undo",
+        redo: "#redo",
+        reset: ".reset",
+        evaluating: "#pokemon",
+        favorites: "#favorites",
+        sharedList: "#shared-list",
+        sharedListContainer: "#shared-list-modal",
+        sharedListContinue: "#shared-list-continue",
+        sharedListSkip: ".shared-list-skip"
+    },
+    messages: {
+        mustSelect: "You must select some Pokémon first! If you like them all the same, press Pass.",
+        orderedAll: 'You have ordered every available Pokémon!',
+        noItems: 'There are no Pokémon that fit your criteria! Set some different options and try again.'
+    },
+    onUpdate: function(updateType) {
+        var totalPokemon = this.picker.state.items.length;
+        var current = this.picker.state.arrays.current.length;
+        var favorites = this.picker.state.arrays.favorites.length;
+        var eliminated = this.picker.state.arrays.eliminated.length;
+        var evaluating = this.picker.state.arrays.evaluating.length;
+        var remaining = Math.max(0, totalPokemon - favorites - eliminated - 1);
+
+        setPickerWidth();
+
+        $("#major").prop("disabled", !this.picker.state.settings.includeForms);
+
+        $("#remaining").text(remaining);
+
+        updateProgressBar((1 - (remaining / this.picker.state.roundSize)) * 100, updateType);
+
+        $("#found-favorites").find("p.state-info").remove();
+
+        if (favorites === 0) {
+            $("#found-favorites").prepend('<p class="state-info">None yet! Your favorites will start appearing here when you\'ve narrowed things down.</p>');
+        } else {
+            $("#dispute").after('<p class="state-info"><a href="/favorite-list' + this.picker.getShortcodeLink() + (this.picker.state.settings.shiny ? '&shiny=1' : '') + '">Shareable link to your current favorites list.</a> Note that that page won\'t automatically update as you go; you\'ll have to share a new link when you\'ve found more favorites.</p>');
+        }
+
+        $("#debug-state").val(JSON ? JSON.stringify(this.picker.state.getState()) : "Your browser does not support native JSON serialization! Unfortunately, at the moment you cannot use the import/export feature.");
+    },
+    wrapItem: function(item) {
+        return $('<li></li>').append($('<span></span>').append(item));
+    },
+    getItemImageUrl: function(pokemon, settings) {
+        return "/sprites/gen8/home-thumb/" + (settings.shiny ? "shiny/" : "") + zeropad(pokemon.number) + (pokemon.form ? "-" + pokemon.form : "") + ".png";
+    }
+});
+
+pickerUI.initialize();
+
+/* SORTABLE FAVORITES */
+
+var sortable = new Sortable(pickerUI.elem.favorites.get(0), {
+    draggable: '.item',
+    animation: 100,
+    onStart: function() {
+        pickerUI.elem.favorites.addClass("sorting");
+    },
+    onEnd: function() {
+        pickerUI.elem.favorites.removeClass("sorting");
+    },
+    onUpdate: function() {
+        pokemonPicker.setFavorites(pickerUI.elem.favorites.children().map(function() {
+            return pickerUI.getItem(this);
+        }).get());
+        pickerUI.update(true, 'sort');
+    }
+});
+
+/* DISPUTE */
+
+function dispute(missing) {
+    /**
+     * Locates the Pokémon whose name is given by missing (if it exists)
+     * and explains to the user where it is in the picker state.
+     */
+    var identifier = identifierFromName(missing);
+    var missingPokemon;
+    var i;
+    var eliminated, eliminator, joinedEliminators;
+    var eliminators = [];
+    var settings = pokemonPicker.getSettings();
+
+    if (!identifier) {
+        alert("'" + missing + "' does not seem to be a Pokémon recognized by the picker. Note that the 'default' form (the one used in non-forms mode) is just the name of its species, so that there is for example no Unown A, just Unown. Otherwise, check your spelling (note that the Nidorans are \"Nidoran (m)\" and \"Nidoran (f)\").");
+        return;
+    }
+    missingPokemon = pokemonPicker.itemMap[identifier];
+    if (pokemonPicker.state.items.indexOf(identifier) === -1) {
+        if (!settingIncludesPokemon(missingPokemon, 'includeForms', settings)) {
+            alert("Forms are only included separately in forms mode. For " + missingPokemon.name + " to appear as a distinct Pokémon, please enable forms mode by checking the box under the Options tab.");
+        }
+        else if (!settingIncludesPokemon(missingPokemon, 'majorOnly', settings)) {
+            alert("You have chosen to include significant form differences only. The distinction between these is unfortunately somewhat arbitrary; " + missingPokemon.name + " is not included. To include it, play in full forms mode.");
+        }
+        else if (!settingIncludesPokemon(missingPokemon, 'finalOnly', settings)) {
+            alert(missingPokemon.name + " is a non-final evolution, and you have checked \"Final evolutions only\". If you are confident this Pokémon does not evolve into anything in the generations you selected, I may have made a mistake classifying it; contact me at antialiasis@gmail.com.");
+        }
+        else if (!settingIncludesPokemon(missingPokemon, 'generations', settings)) {
+            alert(missingPokemon.name + " is from Gen " + missingPokemon.gen + ", and you have excluded that generation. Keep in mind that Mega Evolutions are considered Gen 6, but gender dimorphisms are classified with the generation in which the Pokémon itself was introduced. If I have made a mistake classifying something, please contact me at antialiasis@gmail.com.");
+        }
+        else if (!settingIncludesPokemon(missingPokemon, 'types', settings)) {
+            alert("You have filtered by type, and " + missingPokemon.name + " does not have any of the types you selected. You must select " + prettyJoin(missingPokemon.types.map(capitalize), 'or') + " under \"Types included\" to include this Pokémon.");
+        }
+        else if (!settingIncludesPokemon(missingPokemon, 'spoilers', settings)) {
+            alert(missingPokemon.name + " is considered a spoiler. To include this Pokémon, check \"Include spoilers\" in the Options tab.");
+        }
+        else {
+            alert("Hmm, " + missingPokemon.name + " is not in the filtered list of Pokémon but none of the possible reasons why seem to match. I've done something wrong here. Let me know at antialiasis@gmail.com, include an export of your state (accessible in the bottom right of the Found Favorites tab), and I'll try to figure it out.");
+        }
+        return;
+    }
+
+    eliminated = pokemonPicker.state.findInArray(identifier, 'eliminated');
+
+    if (eliminated) {
+        // The Pokémon was eliminated
+        for (i = 0; i < eliminated.eliminatedBy.length; i++) {
+            eliminator = pokemonPicker.itemMap[eliminated.eliminatedBy[i] + ""];
+            eliminators.push(eliminator.name);
+        }
+        if (eliminators.length === 0) {
+            alert("Hmm, something seems to have gone wrong somewhere. This Pokémon has been eliminated, but not by any Pokémon, which should not happen. Please let me know at antialiasis@gmail.com and include an export of your state (accessible in the bottom right of the Found Favorites tab).");
+        }
+        else {
+            joinedEliminators = prettyJoin(eliminators);
+            alert(missingPokemon.name + " has been marked as eliminated by " + joinedEliminators + ". That means that when it last appeared, you picked " + joinedEliminators + " (and possibly other Pokémon already in your Found Favorites) over it. You will see " + missingPokemon.name + " again when " + joinedEliminators + (eliminators.length === 1 ? " is" : " are") + " under your Found Favorites.");
+        }
+    }
+    else if (pokemonPicker.state.findInArray(identifier, 'survived')) {
+        alert("You've already picked " + missingPokemon.name + " this round. It will be returning in the next.");
+    }
+    else if (pokemonPicker.state.findInArray(identifier, 'current')) {
+        alert(missingPokemon.name + " has yet to appear this round. Don't worry, it's going to.");
+    }
+    else if (pokemonPicker.state.findInArray(identifier, 'favorites')) {
+        alert("What are you talking about? " + missingPokemon.name + " is already in your Found Favorites.");
+    }
+    else if (pokemonPicker.state.findInArray(identifier, 'evaluating')) {
+        alert(missingPokemon.name + " is right there, in the batch you're evaluating right now.");
+    }
+    else {
+        // The Pokémon really isn't in any of our arrays
+        alert("Huh, " + missingPokemon.name + " really doesn't actually seem to be anywhere in here. There seems to be an actual bug! Please let me know at antialiasis@gmail.com and include an export of your state (accessible in the bottom right of the Found Favorites tab).");
+    }
+}
+
+
+/* PROGRESS BAR */
+
+function updateProgressBar(value, updateType) {
+    var $progressBar = $("#progress-bar span");
+
+    if (['pick', 'undo', 'redo'].indexOf(updateType) !== -1) {
+        if (!value && updateType !== 'undo') {
+            $progressBar.animate({ width: '100%' }, 400, function() {
+                $progressBar.width(0);
+            });
+        } else {
+            if (!$progressBar.width() && updateType === 'undo') {
+                $progressBar.width("100%")
+            }
+            $progressBar.animate({ width: value + '%' }, 400);
+        }
+    } else {
+        $progressBar.width(value + '%');
+    }
+}
+
+
+/* ADDITIONAL PICKER EVENT HANDLERS */
+
+pickerUI.elem.settings.includeForms.on('change', function() {
+    pickerUI.elem.settings.majorOnly.prop("disabled", !pickerUI.elem.settings.includeForms.prop("checked"));
+});
+
+pickerUI.elem.settings.types.on('change', function() {
+    var types = pickerUI.getSetting('types');
+    if (types.length === pokemonTypes.length) {
+        $("#types-all").prop("checked", true);
+    } else if (types.length === 0) {
+        $("#types-all").prop("checked", false);
+    }
+});
+
+$("#types-all").on('change', function() {
+    pickerUI.setSetting('types', $(this).prop("checked") ? pokemonTypes : []);
+    pokemonPicker.setSettings(pickerUI.getSettings());
+    pickerUI.update(true, 'setting');
+});
+
+$("#dispute").children('a').on('click', function() {
+    var missing = prompt("Enter the name of a Pokémon to check where it is in the picker's internal lists.");
+    if (missing) {
+        dispute(missing);
+    }
+    return false;
+});
+
+$("#import").on('click', function() {
+    var state;
+
+    try {
+        state = JSON.parse($("#debug-state").val().trim());
+    } catch (e) {
+        $("#debug-state").val("Invalid import state.")
+        return false;
+    }
+
+    if (!pokemonPicker.setState(state)) {
+        $("#debug-state").val("Invalid import state.")
+    }
+
+    pickerUI.update(false, 'import')
+    return false;
+});
+
+
+$(window).on('resize', setPickerWidth);
+
+
+/* NON-PICKER EVENT HANDLERS */
+
+$(".toggle").on('click', function() {
+    $($(this).attr("href")).slideToggle();
+    return false;
+});
+
+$(".tabs").each(function() {
+    var $tabs = $(this);
+    $tabs.find("a:not(#expand-favorites a)").on('click', function() {
+        $($tabs.children(".active").removeClass("active").children("a").attr("href")).hide();
+        $(this).parent().addClass("active");
+        $($(this).attr("href")).show();
+        return false;
+    }).each(function () {
+        $($(this).attr("href")).hide();
+    }).first().click();
+});
+
+$("#expand-favorites a").on('click', function() {
+    $(this).html($("#secondary").hasClass("expanded") ? "&lsaquo;" : "&rsaquo;");
+    $(this).attr("title", $("#secondary").hasClass("expanded") ? "Expand list" : "Show picker");
+    $("#picking").toggleClass("collapsed");
+    $("#secondary").toggleClass("expanded");
+    return false;
+});
+
+$("#darkmode").on('click', function() {
+    if (getActiveStyleSheet() === 'dark') {
+        setActiveStyleSheet(null);
+        $(this).text("Dark mode");
+    } else {
+        setActiveStyleSheet('dark');
+        $(this).text("Light mode");
+    }
+    return false;
+});
+
+if (getActiveStyleSheet() === 'dark') {
+    $("#darkmode").text("Light mode");
+}
+
+
+/* UTILITY FUNCTIONS */
+
+function setPickerWidth() {
+    var evaluating = pokemonPicker.state.arrays.evaluating;
+    pickerUI.elem.evaluating.width(evaluating.length ? getBatchWidth(evaluating.length, 5) * (pickerUI.elem.evaluating.children().width() + 6) : '100%');
+}
+
+function settingIncludesPokemon(pokemon, setting, settings) {
+    /**
+     * Returns false if the Pokémon should be filtered out by the given
+     * setting, or true otherwise.
+     */
+    var value = settings[setting];
+    switch (setting) {
+        case 'includeForms':
+            return value || !pokemon.form;
+        case 'majorOnly':
+            return !value || !pokemon.form || pokemon.major;
+        case 'generations':
+            return value.indexOf(pokemon.gen) !== -1;
+        case 'types':
+            return hasType(pokemon, value);
+        case 'finalOnly':
+            return !value || finalInGeneration(pokemon, settings.generations);
+        case 'spoilers':
+            return value || !pokemon.spoiler;
+        default:
+            return true;
+    }
+}
+
+function getBatchWidth(batchSize, maxWidth) {
+    /**
+     * Calculate how many sprites wide the display area for the Pokémon
+     * should be, for the given batch size.
+     * We want the closest thing possible to a square, but prefer perfect
+     * rectangles to imperfect squares.
+     */
+    // First, factor the batch size.
+    var root = Math.sqrt(batchSize);
+    var i, factor = 1;
+    for (i = 2; i <= root; i++) {
+        // The highest number up to i that batchSize is divisible by is factor.
+        if (batchSize % i === 0) {
+            factor = i;
+        }
+    }
+    // If this would lead to the width being more than three times greater than the height, use the same batch width as the number above.
+    if (3 * factor < batchSize / factor) {
+        return getBatchWidth(batchSize + 1, maxWidth);
+    }
+    else {
+        return Math.min(5, batchSize / factor);
+    }
+}
+
+function prettyJoin(array, word) {
+    /**
+     * Joins the array items together in a human way: "a, b and c"
+     *
+     * word can optionally be set to use a different word than 'and' for
+     * the final item.
+     */
+    if (!word) word = ' and ';
+    if (array.length === 1) {
+        return array[0];
+    }
+    else {
+        return array.slice(0, array.length - 1).join(', ') + word + array[array.length - 1];
+    }
+}
+
+function capitalize(word) {
+    /**
+     * Capitalizes the first letter of the word.
+     */
+    return word.substring(0, 1).toUpperCase() + word.substring(1);
+}
+
+function zeropad(number) {
+    /**
+     * Pads a number with zeroes up to three digits.
+     */
+    var num = number.toString();
+    while (num.length < 3) {
+        num = "0" + num;
+    }
+    return num;
+}
+
+function getPokemonIdentifier(pokemon) {
+    /**
+     * Returns the identifier of the given Pokémon.
+     */
+    return pokemon.id || pokemon.identifier || pokemon.number + (pokemon.form || '');
+}
+
+function identifierFromName(name) {
+    /**
+     * Returns the identifier of the Pokémon whose name is given
+     * (case-insensitive).
+     */
+    return pokemonPicker.forEachItem(function(identifier) {
+        if (pokemonPicker.itemMap[identifier].name.toLowerCase() === name.toLowerCase()) {
+            return identifier;
+        }
+        else {
+            return false;
+        }
+    });
+}
+
+function hasType(pokemon, types) {
+    /**
+     * Returns true if the given Pokémon object has at least one of the
+     * given types.
+     */
+    for (var i = 0; i < pokemon.types.length; i++) {
+        if (types.indexOf(pokemon.types[i]) !== -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function finalInGeneration(pokemon, generations) {
+    /**
+     * Returns true if the given Pokémon object is a final evolution in
+     * the given generation.
+     */
+    return pokemon.finalEvolution === true || pokemon.finalEvolution && generations.indexOf(pokemon.finalEvolution) === -1;
+}
+
+/* CONSOLE TESTS */
+
+function createShortcode(num) {
+    var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    return alphabet[Math.floor(num / 64)] + alphabet[num % 64];
+}
+
+function testShortcodes() {
+    var firstForm = null;
+    for (var i = 0; i < items.length; i++) {
+        if (firstForm === null && items[i].form) {
+            firstForm = i;
+        }
+        var expectedShortcode = createShortcode(firstForm !== null ? i - firstForm + 2500 : i);
+        if (expectedShortcode !== items[i].shortcode) {
+            console.log('Unexpected shortcode! Expected:', expectedShortcode, items[i]);
+        }
+    }
+}
+</script>
+</body>
+</html>
